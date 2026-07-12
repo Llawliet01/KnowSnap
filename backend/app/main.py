@@ -76,31 +76,62 @@ def get_structured_summary(ocr_text: str) -> dict:
     }}
     """
     
-    # Try Groq (Llama-3.1-8b) first for quick structured JSON response
-    if settings.groq_api_key and settings.llm_provider == "groq":
-        try:
-            client = Groq(api_key=settings.groq_api_key)
-            completion = client.chat.completions.create(
-                messages=[{"role": "user", "content": prompt}],
-                model="llama-3.1-8b-instant",
-                response_format={"type": "json_object"}
-            )
-            return json.loads(completion.choices[0].message.content)
-        except Exception as e:
-            print(f"Groq summarization failed: {e}. Falling back to Gemini...")
-
-    # Fallback to Gemini API
-    if settings.gemini_api_key:
-        try:
-            genai.configure(api_key=settings.gemini_api_key)
-            model = genai.GenerativeModel(
-                model_name="gemini-3.1-flash-lite",
-                generation_config={"response_mime_type": "application/json"}
-            )
-            response = model.generate_content(prompt)
-            return json.loads(response.text)
-        except Exception as e:
-            print(f"Gemini summarization failed: {e}")
+    # Bidirectional Fallback logic based on settings
+    primary = settings.llm_provider.lower()
+    
+    if primary == "google":
+        # 1. Try Gemini first
+        if settings.gemini_api_key:
+            try:
+                genai.configure(api_key=settings.gemini_api_key)
+                model = genai.GenerativeModel(
+                    model_name="gemini-3.1-flash-lite",
+                    generation_config={"response_mime_type": "application/json"}
+                )
+                response = model.generate_content(prompt)
+                return json.loads(response.text)
+            except Exception as e:
+                print(f"Primary Gemini summarization failed: {e}. Falling back to Groq...")
+        
+        # 2. Fallback to Groq
+        if settings.groq_api_key:
+            try:
+                client = Groq(api_key=settings.groq_api_key)
+                completion = client.chat.completions.create(
+                    messages=[{"role": "user", "content": prompt}],
+                    model="llama-3.1-8b-instant",
+                    response_format={"type": "json_object"}
+                )
+                return json.loads(completion.choices[0].message.content)
+            except Exception as e:
+                print(f"Fallback Groq summarization failed: {e}")
+                
+    else: # Default: groq
+        # 1. Try Groq first
+        if settings.groq_api_key:
+            try:
+                client = Groq(api_key=settings.groq_api_key)
+                completion = client.chat.completions.create(
+                    messages=[{"role": "user", "content": prompt}],
+                    model="llama-3.1-8b-instant",
+                    response_format={"type": "json_object"}
+                )
+                return json.loads(completion.choices[0].message.content)
+            except Exception as e:
+                print(f"Primary Groq summarization failed: {e}. Falling back to Gemini...")
+                
+        # 2. Fallback to Gemini
+        if settings.gemini_api_key:
+            try:
+                genai.configure(api_key=settings.gemini_api_key)
+                model = genai.GenerativeModel(
+                    model_name="gemini-3.1-flash-lite",
+                    generation_config={"response_mime_type": "application/json"}
+                )
+                response = model.generate_content(prompt)
+                return json.loads(response.text)
+            except Exception as e:
+                print(f"Fallback Gemini summarization failed: {e}")
             
     # Ultimate fallback if APIs fail at runtime
     return {
