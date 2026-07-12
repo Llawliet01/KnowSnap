@@ -1,0 +1,24 @@
+# Python environment files and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+venv/
+ENV/
+backend/.env
+backend/chroma_db/
+chroma_db/
+
+# Next.js and Node dependencies
+node_modules/
+.next/
+out/
+build/
+frontend/.env*.local
+frontend/.next/
+frontend/node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
