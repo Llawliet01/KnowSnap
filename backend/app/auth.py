@@ -5,7 +5,7 @@ from app.config import settings
 
 # Initialize JWKS client pointing to Supabase auth keys
 # Supabase exposes their public keys at /auth/v1/jwks
-jwks_url = f"{settings.supabase_url.rstrip('/')}/auth/v1/jwks"
+jwks_url = f"{settings.supabase_url.rstrip('/')}/auth/v1/.well-known/jwks.json"
 print(f"Auth: Initializing JWK client pointing to {jwks_url}")
 jwks_client = PyJWKClient(jwks_url)
 
