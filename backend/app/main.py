@@ -39,6 +39,13 @@ if settings.cloudinary_url:
 
 app = FastAPI(title="Recall AI Backend API", version="1.0.0")
 
+# Helper: Parse comma-separated list of keys from environment
+def get_gemini_api_keys() -> list[str]:
+    return [k.strip() for k in settings.gemini_api_key.split(",") if k.strip()]
+
+def get_groq_api_keys() -> list[str]:
+    return [k.strip() for k in settings.groq_api_key.split(",") if k.strip()]
+
 # Helper: Resize image to speed up CPU OCR calculations
 def optimize_image_size(file_path: str) -> None:
     try:
@@ -68,93 +75,112 @@ def optimize_image_size(file_path: str) -> None:
 
 # Helper: Direct Multimodal Gemini Vision call to extract text and summary in 2 seconds
 def get_multimodal_ocr_and_summary(image_path: str) -> dict:
-    if not settings.gemini_api_key:
+    gemini_keys = get_gemini_api_keys()
+    if not gemini_keys:
         raise ValueError("Missing GEMINI_API_KEY")
         
-    try:
-        import google.generativeai as genai
-        from PIL import Image
-        img = Image.open(image_path)
-        
-        prompt = """
-        Analyze this image and extract the following:
-        1. 'ocr_text': The complete, exact raw text found in the image. Do not summarize or skip anything. Keep it formatted as text blocks.
-        2. 'title': A short, descriptive title (e.g., 'Groq Model Limits Dashboard' or 'Yug Patel Resume').
-        3. 'description': A 2-sentence summary of the content and purpose of the image.
-        4. 'tags': A list of 3-5 relevant keywords/tags.
-        
-        Respond strictly in a JSON object matching this structure:
-        {
-            "ocr_text": "extracted text",
-            "title": "descriptive title",
-            "description": "2-sentence summary description",
-            "tags": ["tag1", "tag2", "tag3"]
-        }
-        """
-        
-        genai.configure(api_key=settings.gemini_api_key)
-        # Use gemini-3.5-flash as it is the active, fast, and highly capable multimodal production model
-        model = genai.GenerativeModel(
-            model_name="gemini-3.5-flash",
-            generation_config={"response_mime_type": "application/json"}
-        )
-        
-        response = model.generate_content([img, prompt])
-        return json.loads(response.text)
-    except Exception as e:
-        print(f"Gemini Multimodal Vision API failed: {e}")
-        raise e
+    import google.generativeai as genai
+    from PIL import Image
+    import random
+    
+    # Shuffle to load-balance across available keys
+    shuffled_keys = list(gemini_keys)
+    random.shuffle(shuffled_keys)
+    
+    prompt = """
+    Analyze this image and extract the following:
+    1. 'ocr_text': The complete, exact raw text found in the image. Do not summarize or skip anything. Keep it formatted as text blocks.
+    2. 'title': A short, descriptive title (e.g., 'Groq Model Limits Dashboard' or 'Yug Patel Resume').
+    3. 'description': A 2-sentence summary of the content and purpose of the image.
+    4. 'tags': A list of 3-5 relevant keywords/tags.
+    
+    Respond strictly in a JSON object matching this structure:
+    {
+        "ocr_text": "extracted text",
+        "title": "descriptive title",
+        "description": "2-sentence summary description",
+        "tags": ["tag1", "tag2", "tag3"]
+    }
+    """
+    
+    last_err = ValueError("All Gemini keys failed or no keys were provided")
+    for idx, key in enumerate(shuffled_keys):
+        try:
+            img = Image.open(image_path)
+            genai.configure(api_key=key)
+            # Use gemini-3.5-flash as it is the active, fast, and highly capable multimodal production model
+            model = genai.GenerativeModel(
+                model_name="gemini-3.5-flash",
+                generation_config={"response_mime_type": "application/json"}
+            )
+            response = model.generate_content([img, prompt])
+            return json.loads(response.text)
+        except Exception as e:
+            print(f"[Gemini Multimodal] Key index {idx} failed: {e}. Trying next...")
+            last_err = e
+            
+    raise last_err
 
 # Helper: Direct Multimodal Groq Vision call to extract text and summary in under 1 second
 def get_groq_multimodal_ocr_and_summary(image_path: str) -> dict:
-    if not settings.groq_api_key:
+    groq_keys = get_groq_api_keys()
+    if not groq_keys:
         raise ValueError("Missing GROQ_API_KEY")
         
-    try:
-        import base64
-        with open(image_path, "rb") as image_file:
-            base64_image = base64.b64encode(image_file.read()).decode('utf-8')
-            
-        prompt = """
-        Analyze this image and extract the following:
-        1. 'ocr_text': The complete, exact raw text found in the image. Do not summarize or skip anything. Keep it formatted as text blocks.
-        2. 'title': A short, descriptive title (e.g., 'Groq Model Limits Dashboard' or 'Yug Patel Resume').
-        3. 'description': A 2-sentence summary of the content and purpose of the image.
-        4. 'tags': A list of 3-5 relevant keywords/tags.
+    import base64
+    import random
+    from groq import Groq
+    
+    with open(image_path, "rb") as image_file:
+        base64_image = base64.b64encode(image_file.read()).decode('utf-8')
         
-        Respond strictly in a JSON object matching this structure:
-        {
-            "ocr_text": "extracted text",
-            "title": "descriptive title",
-            "description": "2-sentence summary description",
-            "tags": ["tag1", "tag2", "tag3"]
-        }
-        """
-        
-        from groq import Groq
-        client = Groq(api_key=settings.groq_api_key)
-        completion = client.chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{base64_image}"
+    prompt = """
+    Analyze this image and extract the following:
+    1. 'ocr_text': The complete, exact raw text found in the image. Do not summarize or skip anything. Keep it formatted as text blocks.
+    2. 'title': A short, descriptive title (e.g., 'Groq Model Limits Dashboard' or 'Yug Patel Resume').
+    3. 'description': A 2-sentence summary of the content and purpose of the image.
+    4. 'tags': A list of 3-5 relevant keywords/tags.
+    
+    Respond strictly in a JSON object matching this structure:
+    {
+        "ocr_text": "extracted text",
+        "title": "descriptive title",
+        "description": "2-sentence summary description",
+        "tags": ["tag1", "tag2", "tag3"]
+    }
+    """
+    
+    shuffled_keys = list(groq_keys)
+    random.shuffle(shuffled_keys)
+    
+    last_err = ValueError("All Groq keys failed or no keys were provided")
+    for idx, key in enumerate(shuffled_keys):
+        try:
+            client = Groq(api_key=key)
+            completion = client.chat.completions.create(
+                model="meta-llama/llama-4-scout-17b-16e-instruct",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{base64_image}"
+                                }
                             }
-                        }
-                    ]
-                }
-            ],
-            response_format={"type": "json_object"}
-        )
-        return json.loads(completion.choices[0].message.content)
-    except Exception as e:
-        print(f"Groq Multimodal Vision API failed: {e}")
-        raise e
+                        ]
+                    }
+                ],
+                response_format={"type": "json_object"}
+            )
+            return json.loads(completion.choices[0].message.content)
+        except Exception as e:
+            print(f"[Groq Multimodal] Key index {idx} failed: {e}. Trying next...")
+            last_err = e
+            
+    raise last_err
 
 # Enable CORS for Next.js frontend calls
 app.add_middleware(
@@ -186,11 +212,11 @@ def download_image_to_temp(image_url: str) -> str:
 
 # Helper: Direct LLM call for Structured Summarization
 def get_structured_summary(ocr_text: str) -> dict:
-    import google.generativeai as genai
-    from groq import Groq
+    gemini_keys = get_gemini_api_keys()
+    groq_keys = get_groq_api_keys()
     
     # If keys are missing, return a mocked placeholder
-    if not settings.gemini_api_key and not settings.groq_api_key:
+    if not gemini_keys and not groq_keys:
         print("Warning: Missing API keys. Returning mock summary.")
         return {
             "title": "Mocked Screenshot Summary",
@@ -216,48 +242,62 @@ def get_structured_summary(ocr_text: str) -> dict:
     }}
     """
 
-    # --- UPLOAD SUMMARIZATION: 3-TIER FALLBACK CHAIN ---
+    import random
+
+    # --- UPLOAD SUMMARIZATION: 3-TIER FALLBACK CHAIN WITH KEY ROTATION ---
     # Summarization is a lightweight structured task — use fast/cheap models first,
     # save heavyweight reasoning models for chat/RAG where they matter more.
 
     # Tier 1: Gemini 3.1 Flash Lite — fast, cheap, excellent JSON structured output
-    if settings.gemini_api_key:
-        try:
-            genai.configure(api_key=settings.gemini_api_key)
-            gemini_model = genai.GenerativeModel(
-                model_name="gemini-3.1-flash-lite",
-                generation_config={"response_mime_type": "application/json"}
-            )
-            response = gemini_model.generate_content(prompt)
-            return json.loads(response.text)
-        except Exception as e:
-            print(f"[Upload Tier 1] Gemini Flash Lite failed: {e}. Trying Groq 8b...")
+    if gemini_keys:
+        shuffled_gemini = list(gemini_keys)
+        random.shuffle(shuffled_gemini)
+        for idx, key in enumerate(shuffled_gemini):
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=key)
+                gemini_model = genai.GenerativeModel(
+                    model_name="gemini-3.1-flash-lite",
+                    generation_config={"response_mime_type": "application/json"}
+                )
+                response = gemini_model.generate_content(prompt)
+                return json.loads(response.text)
+            except Exception as e:
+                print(f"[Upload Tier 1] Gemini Key index {idx} failed: {e}. Trying next...")
 
     # Tier 2: Groq Llama 8b — different provider, independent rate limits, fast
-    if settings.groq_api_key:
-        try:
-            client = Groq(api_key=settings.groq_api_key)
-            completion = client.chat.completions.create(
-                messages=[{"role": "user", "content": prompt}],
-                model="llama-3.1-8b-instant",
-                response_format={"type": "json_object"}
-            )
-            return json.loads(completion.choices[0].message.content)
-        except Exception as e:
-            print(f"[Upload Tier 2] Groq 8b failed: {e}. Trying Gemini 3.5 Flash...")
+    if groq_keys:
+        shuffled_groq = list(groq_keys)
+        random.shuffle(shuffled_groq)
+        for idx, key in enumerate(shuffled_groq):
+            try:
+                from groq import Groq
+                client = Groq(api_key=key)
+                completion = client.chat.completions.create(
+                    messages=[{"role": "user", "content": prompt}],
+                    model="llama-3.1-8b-instant",
+                    response_format={"type": "json_object"}
+                )
+                return json.loads(completion.choices[0].message.content)
+            except Exception as e:
+                print(f"[Upload Tier 2] Groq Key index {idx} failed: {e}. Trying next...")
 
     # Tier 3: Gemini 3.5 Flash — most capable Google model, final safety net
-    if settings.gemini_api_key:
-        try:
-            genai.configure(api_key=settings.gemini_api_key)
-            gemini_model = genai.GenerativeModel(
-                model_name="gemini-3.5-flash",
-                generation_config={"response_mime_type": "application/json"}
-            )
-            response = gemini_model.generate_content(prompt)
-            return json.loads(response.text)
-        except Exception as e:
-            print(f"[Upload Tier 3] Gemini 3.5 Flash failed: {e}")
+    if gemini_keys:
+        shuffled_gemini = list(gemini_keys)
+        random.shuffle(shuffled_gemini)
+        for idx, key in enumerate(shuffled_gemini):
+            try:
+                import google.generativeai as genai
+                genai.configure(api_key=key)
+                gemini_model = genai.GenerativeModel(
+                    model_name="gemini-3.5-flash",
+                    generation_config={"response_mime_type": "application/json"}
+                )
+                response = gemini_model.generate_content(prompt)
+                return json.loads(response.text)
+            except Exception as e:
+                print(f"[Upload Tier 3] Gemini Key index {idx} failed: {e}. Trying next...")
 
     # Ultimate fallback — all APIs down/rate-limited
     return {
@@ -565,9 +605,13 @@ def chat_with_brain(payload: ChatRequest):
     from langchain_core.prompts import ChatPromptTemplate
     from langchain_groq import ChatGroq
     from langchain_google_genai import ChatGoogleGenerativeAI
+    import random
+
+    gemini_keys = get_gemini_api_keys()
+    groq_keys = get_groq_api_keys()
 
     # If keys are missing, return a mocked RAG chat response
-    if not settings.gemini_api_key and not settings.groq_api_key:
+    if not gemini_keys and not groq_keys:
         return {
             "answer": "Hello! I am Recall AI. Please add your GEMINI_API_KEY or GROQ_API_KEY in the backend `.env` file to chat with your saved screenshots. (This is a mock response).",
             "sources": []
@@ -594,53 +638,51 @@ def chat_with_brain(payload: ChatRequest):
         if not context_str.strip():
             context_str = "No relevant saved screenshots or bookmarks found in your personal database."
 
-        # 2. Build LangChain models with 5-Tier Fallback Chain
-        # Tier 1: Llama 70b (Groq)       — best reasoning for RAG
-        # Tier 2: Llama 8b (Groq)         — lighter, less rate-limited
-        # Tier 3: GPT-OSS 120b (Groq)     — most powerful, used as last Groq resort
-        # Tier 4: Gemini 3.1 Flash Lite   — different provider entirely
-        # Tier 5: Gemini 3.5 Flash        — strongest Google model, final safety net
+        # 2. Build LangChain models with 5-Tier Fallback Chain using rotated key
         fallback_models = []
 
-        if settings.groq_api_key:
+        selected_groq_key = random.choice(groq_keys) if groq_keys else None
+        selected_gemini_key = random.choice(gemini_keys) if gemini_keys else None
+
+        if selected_groq_key:
             llama_8b = ChatGroq(
                 model="llama-3.1-8b-instant",
-                groq_api_key=settings.groq_api_key
+                groq_api_key=selected_groq_key
             )
             gpt_oss_120b = ChatGroq(
                 model="openai/gpt-oss-120b",
-                groq_api_key=settings.groq_api_key
+                groq_api_key=selected_groq_key
             )
             fallback_models.append(llama_8b)
             fallback_models.append(gpt_oss_120b)
 
-        if settings.gemini_api_key:
+        if selected_gemini_key:
             gemini_lite = ChatGoogleGenerativeAI(
                 model="gemini-3.1-flash-lite",
-                google_api_key=settings.gemini_api_key
+                google_api_key=selected_gemini_key
             )
             gemini_35 = ChatGoogleGenerativeAI(
                 model="gemini-3.5-flash",
-                google_api_key=settings.gemini_api_key
+                google_api_key=selected_gemini_key
             )
             fallback_models.append(gemini_lite)
             fallback_models.append(gemini_35)
 
         # Primary model: Groq Llama 70b (best speed + quality for RAG)
-        if settings.groq_api_key:
+        if selected_groq_key:
             primary_model = ChatGroq(
                 model="llama-3.3-70b-versatile",
-                groq_api_key=settings.groq_api_key
+                groq_api_key=selected_groq_key
             )
         else:
             # If no Groq key, start from Gemini lite as primary
             primary_model = ChatGoogleGenerativeAI(
                 model="gemini-3.1-flash-lite",
-                google_api_key=settings.gemini_api_key
+                google_api_key=selected_gemini_key
             )
             fallback_models = [ChatGoogleGenerativeAI(
                 model="gemini-3.5-flash",
-                google_api_key=settings.gemini_api_key
+                google_api_key=selected_gemini_key
             )]
 
         # Bind all fallbacks into a single chain
