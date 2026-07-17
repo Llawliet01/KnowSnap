@@ -1261,163 +1261,275 @@ if __name__ == '__main__':
 
               {tourStep === 1 && (
                 <div>
-                  <h4 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: '1.2rem', color: '#ffffff', margin: '0 0 0.5rem' }}>
-                    1. The Real-time Concept ⚡
+                  <h4 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: '1.25rem', color: '#ffffff', margin: '0 0 0.5rem' }}>
+                    Welcome to Recall AI 🧠
                   </h4>
                   <p style={{ fontSize: '0.88rem', color: '#9ca3af', fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: '1.75rem' }}>
-                    When you take a screenshot, Windows automatically saves it to disk (in your Pictures or OneDrive). Web apps cannot access these files without explicit upload. 
-                    <br/><br/>
-                    Our <span style={{ fontWeight: 700, color: '#a5b4fc' }}>local helper script</span> bridges this gap, checking for new captures every second!
+                    Recall AI is your personal multi-modal knowledge hub. It lets you capture, index, and organize your screenshots and web bookmarks so everything is instantly searchable.
+                    <br /><br />
+                    Powered by a <span style={{ fontWeight: 700, color: '#a5b4fc' }}>multi-modal vision engine</span>, our system automatically extracts text (OCR) and maps context behind the scenes, allowing you to search semantically or chat directly with our AI Assistant to find anything.
                   </p>
                 </div>
               )}
 
               {tourStep === 2 && (
                 <div>
-                  <h4 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: '1.2rem', color: '#ffffff', margin: '0 0 0.5rem' }}>
-                    2. Download Pre-configured Script 📥
+                  <h4 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: '1.25rem', color: '#ffffff', margin: '0 0 0.5rem' }}>
+                    Windows Screenshot Auto-Sync ⚡
                   </h4>
-                  <p style={{ fontSize: '0.88rem', color: '#9ca3af', fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: '1.25rem' }}>
-                    We generated a custom `recall_watcher.py` script containing your active login email (<span style={{ color: '#a5b4fc', fontWeight: 600 }}>{user?.email || 'your_email@example.com'}</span>).
+                  <p style={{ fontSize: '0.88rem', color: '#9ca3af', fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: '1.75rem' }}>
+                    Never upload manually again! The Auto-Sync feature instantly matches and uploads your screenshots the exact millisecond they are captured on your Windows PC.
+                    <br /><br />
+                    A lightweight background script monitors your Windows Screenshots folder or OneDrive location, uploading new captures immediately so they show up on your dashboard.
+                    <br /><br />
+                    Would you like to enable this feature and show setup instructions?
                   </p>
-                  <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
-                    <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={downloadWatcherScript}
-                      style={{
-                        padding: '0.65rem 1.25rem',
-                        borderRadius: '12px',
-                        border: 'none',
-                        background: 'rgba(108,99,255,0.15)',
-                        border: '1px solid rgba(108,99,255,0.3)',
-                        color: '#a5b4fc',
-                        fontFamily: "'Outfit', sans-serif",
-                        fontWeight: 700,
-                        fontSize: '0.8rem',
-                        cursor: 'pointer',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.35rem',
-                      }}
-                    >
-                      <Download style={{ width: 14, height: 14 }} />
-                      Download recall_watcher.py
-                    </motion.button>
-                  </div>
                 </div>
               )}
 
               {tourStep === 3 && (
-                <div>
-                  <h4 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: '1.2rem', color: '#ffffff', margin: '0 0 0.5rem' }}>
-                    3. Launch and Start Syncing! 🚀
+                <div style={{ maxHeight: '420px', overflowY: 'auto', paddingRight: '0.5rem', marginBottom: '1.5rem' }}>
+                  <h4 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: '1.25rem', color: '#ffffff', margin: '0 0 0.75rem' }}>
+                    Auto-Sync Setup Steps ⚙️
                   </h4>
-                  <p style={{ fontSize: '0.88rem', color: '#9ca3af', fontFamily: "'Inter', sans-serif", lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                    Open your command line in the folder you downloaded the file, and run:
-                  </p>
-                  <code style={{
-                    display: 'block',
-                    padding: '0.75rem 1rem',
-                    borderRadius: '12px',
-                    background: '#0f172a',
-                    color: '#38bdf8',
-                    fontFamily: 'monospace',
-                    fontSize: '0.78rem',
-                    marginBottom: '1.5rem',
-                    border: '1px solid rgba(255,255,255,0.05)',
-                  }}>
-                    python recall_watcher.py
-                  </code>
-                  <p style={{ fontSize: '0.78rem', color: '#6b7280', fontFamily: "'Inter', sans-serif", lineHeight: 1.5, marginBottom: '1.75rem' }}>
-                    ⚠️ Note: It will ask you for your account password on startup to fetch a secure upload access token.
-                  </p>
+
+                  {/* Step A */}
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: '0.9rem', color: '#a5b4fc', marginBottom: '0.25rem' }}>
+                      1. Check Python Installation
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: '#9ca3af', margin: 0, lineHeight: 1.5 }}>
+                      Open your command prompt or terminal and type <code style={{ color: '#ffffff', background: 'rgba(255,255,255,0.1)', padding: '0.1rem 0.3rem', borderRadius: '4px' }}>python</code>. If it launches Python, you are ready for step 3.
+                    </p>
+                  </div>
+
+                  {/* Step B */}
+                  <div style={{ marginBottom: '1.25rem', background: 'rgba(255,255,255,0.02)', padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: '0.9rem', color: '#a5b4fc', marginBottom: '0.35rem' }}>
+                      2. If Python is Not Installed (3 Options):
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: '1.1rem', fontSize: '0.75rem', color: '#9ca3af', display: 'flex', flexDirection: 'column', gap: '0.5rem', lineHeight: 1.45 }}>
+                      <li>
+                        <strong style={{ color: '#ffffff' }}>Option A (Easiest)</strong>: Type <code style={{ color: '#ffffff', background: 'rgba(255,255,255,0.1)', padding: '0.05rem 0.25rem', borderRadius: '3px' }}>python</code> in command prompt. Windows will auto-open the Microsoft Store. Click "Get/Install".
+                      </li>
+                      <li>
+                        <strong style={{ color: '#ffffff' }}>Option B (Package Manager)</strong>: Run command:
+                        <code style={{ display: 'block', background: '#0f172a', padding: '0.35rem 0.5rem', borderRadius: '6px', marginTop: '0.25rem', color: '#38bdf8' }}>
+                          winget install -e --id Python.Python.3.12
+                        </code>
+                      </li>
+                      <li>
+                        <strong style={{ color: '#ffffff' }}>Option C (PowerShell Silent Installer)</strong>: Run:
+                        <code style={{ display: 'block', background: '#0f172a', padding: '0.35rem 0.5rem', borderRadius: '6px', marginTop: '0.25rem', color: '#38bdf8', fontSize: '0.68rem', overflowX: 'auto', whiteSpace: 'nowrap' }}>
+                          Invoke-WebRequest -Uri "https://www.python.org/ftp/python/3.12.3/python-3.12.3-amd64.exe" -OutFile "python_installer.exe"; Start-Process "python_installer.exe" -ArgumentList "/quiet InstallAllUsers=1 PrependPath=1" -Wait; Remove-Item "python_installer.exe"
+                        </code>
+                      </li>
+                    </ul>
+                  </div>
+
+                  {/* Step C */}
+                  <div style={{ marginBottom: '0.5rem' }}>
+                    <div style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 700, fontSize: '0.9rem', color: '#a5b4fc', marginBottom: '0.25rem' }}>
+                      3. Download & Run Auto-Sync Script
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: '#9ca3af', lineHeight: 1.5, marginBottom: '0.75rem' }}>
+                      Download the custom script pre-configured with your login email:
+                    </p>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+                      <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={downloadWatcherScript}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          borderRadius: '10px',
+                          border: 'none',
+                          background: 'rgba(108,99,255,0.15)',
+                          border: '1px solid rgba(108,99,255,0.3)',
+                          color: '#a5b4fc',
+                          fontFamily: "'Outfit', sans-serif",
+                          fontWeight: 700,
+                          fontSize: '0.78rem',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                        }}
+                      >
+                        <Download style={{ width: 13, height: 13 }} />
+                        Download recall_watcher.py
+                      </motion.button>
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: '#9ca3af', lineHeight: 1.5, marginBottom: '0.5rem' }}>
+                      Open your command prompt where you downloaded the script and run:
+                    </p>
+                    <code style={{
+                      display: 'block',
+                      padding: '0.5rem 0.75rem',
+                      borderRadius: '8px',
+                      background: '#0f172a',
+                      color: '#38bdf8',
+                      fontFamily: 'monospace',
+                      fontSize: '0.75rem',
+                      marginBottom: '0.5rem',
+                      border: '1px solid rgba(255,255,255,0.05)',
+                    }}>
+                      python recall_watcher.py
+                    </code>
+                    <p style={{ fontSize: '0.72rem', color: '#6b7280', margin: 0, lineHeight: 1.4 }}>
+                      ⚠️ Note: It will ask for your password once on startup to securely verify and fetch a temporary session key.
+                    </p>
+                  </div>
                 </div>
               )}
 
               {/* Navigation buttons */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                {tourStep > 1 ? (
-                  <button
-                    onClick={() => setTourStep(tourStep - 1)}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#9ca3af',
-                      fontFamily: "'Outfit', sans-serif",
-                      fontWeight: 700,
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                      transition: 'color 0.2s',
-                    }}
-                    onMouseEnter={(e) => e.target.style.color = '#ffffff'}
-                    onMouseLeave={(e) => e.target.style.color = '#9ca3af'}
-                  >
-                    Back
-                  </button>
-                ) : (
-                  <button
-                    onClick={markTourAsSeen}
-                    style={{
-                      background: 'transparent',
-                      border: 'none',
-                      color: '#6b7280',
-                      fontFamily: "'Outfit', sans-serif",
-                      fontWeight: 500,
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                      transition: 'color 0.2s',
-                    }}
-                    onMouseEnter={(e) => e.target.style.color = '#9ca3af'}
-                    onMouseLeave={(e) => e.target.style.color = '#6b7280'}
-                  >
-                    Skip guide
-                  </button>
+                {tourStep === 1 && (
+                  <>
+                    <button
+                      onClick={markTourAsSeen}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#6b7280',
+                        fontFamily: "'Outfit', sans-serif",
+                        fontWeight: 500,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        transition: 'color 0.2s',
+                      }}
+                      onMouseEnter={(e) => e.target.style.color = '#9ca3af'}
+                      onMouseLeave={(e) => e.target.style.color = '#6b7280'}
+                    >
+                      Skip guide
+                    </button>
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setTourStep(2)}
+                      style={{
+                        padding: '0.6rem 1.25rem',
+                        borderRadius: '12px',
+                        border: 'none',
+                        background: '#6C63FF',
+                        color: 'white',
+                        fontFamily: "'Outfit', sans-serif",
+                        fontWeight: 800,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(108,99,255,0.25)',
+                      }}
+                    >
+                      Next Step
+                    </motion.button>
+                  </>
                 )}
 
-                {tourStep < 3 ? (
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setTourStep(tourStep + 1)}
-                    style={{
-                      padding: '0.6rem 1.25rem',
-                      borderRadius: '12px',
-                      border: 'none',
-                      background: '#6C63FF',
-                      color: 'white',
-                      fontFamily: "'Outfit', sans-serif",
-                      fontWeight: 800,
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(108,99,255,0.25)',
-                    }}
-                  >
-                    Next Step
-                  </motion.button>
-                ) : (
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => {
-                      toggleOsSync(true);
-                      markTourAsSeen();
-                    }}
-                    style={{
-                      padding: '0.6rem 1.25rem',
-                      borderRadius: '12px',
-                      border: 'none',
-                      background: 'linear-gradient(135deg, #6C63FF, #00C9A7)',
-                      color: 'white',
-                      fontFamily: "'Outfit', sans-serif",
-                      fontWeight: 800,
-                      fontSize: '0.85rem',
-                      cursor: 'pointer',
-                      boxShadow: '0 4px 12px rgba(0,201,167,0.25)',
-                    }}
-                  >
-                    Finish & Enable Auto-Sync
-                  </motion.button>
+                {tourStep === 2 && (
+                  <>
+                    <button
+                      onClick={() => setTourStep(1)}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#9ca3af',
+                        fontFamily: "'Outfit', sans-serif",
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        transition: 'color 0.2s',
+                      }}
+                      onMouseEnter={(e) => e.target.style.color = '#ffffff'}
+                      onMouseLeave={(e) => e.target.style.color = '#9ca3af'}
+                    >
+                      Back
+                    </button>
+                    <div style={{ display: 'flex', gap: '0.75rem' }}>
+                      <button
+                        onClick={markTourAsSeen}
+                        style={{
+                          padding: '0.6rem 1.25rem',
+                          borderRadius: '12px',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          background: 'transparent',
+                          color: '#ef4444',
+                          fontFamily: "'Outfit', sans-serif",
+                          fontWeight: 700,
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={(e) => { e.target.style.background = 'rgba(239,68,68,0.1)'; }}
+                        onMouseLeave={(e) => { e.target.style.background = 'transparent'; }}
+                      >
+                        Don't Enable
+                      </button>
+                      <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => setTourStep(3)}
+                        style={{
+                          padding: '0.6rem 1.25rem',
+                          borderRadius: '12px',
+                          border: 'none',
+                          background: '#6C63FF',
+                          color: 'white',
+                          fontFamily: "'Outfit', sans-serif",
+                          fontWeight: 800,
+                          fontSize: '0.85rem',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 12px rgba(108,99,255,0.25)',
+                        }}
+                      >
+                        Enable Setup Steps
+                      </motion.button>
+                    </div>
+                  </>
+                )}
+
+                {tourStep === 3 && (
+                  <>
+                    <button
+                      onClick={() => setTourStep(2)}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#9ca3af',
+                        fontFamily: "'Outfit', sans-serif",
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        transition: 'color 0.2s',
+                      }}
+                      onMouseEnter={(e) => e.target.style.color = '#ffffff'}
+                      onMouseLeave={(e) => e.target.style.color = '#9ca3af'}
+                    >
+                      Back
+                    </button>
+                    <motion.button
+                      whileHover={{ scale: 1.03 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => {
+                        toggleOsSync(true);
+                        markTourAsSeen();
+                      }}
+                      style={{
+                        padding: '0.6rem 1.25rem',
+                        borderRadius: '12px',
+                        border: 'none',
+                        background: 'linear-gradient(135deg, #6C63FF, #00C9A7)',
+                        color: 'white',
+                        fontFamily: "'Outfit', sans-serif",
+                        fontWeight: 800,
+                        fontSize: '0.85rem',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 12px rgba(0,201,167,0.25)',
+                      }}
+                    >
+                      Finish & Enable Auto-Sync
+                    </motion.button>
+                  </>
                 )}
               </div>
             </motion.div>
